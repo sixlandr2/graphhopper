@@ -35,7 +35,7 @@ jobs:
           restore-keys: |
             ${{ runner.os}}-node_modules-
       - name: Build ${{ matrix.java-version }}
-        run: mvn -B -pl core -am clean test
+        run: mvn -B clean install -DskipTests
       - name: Run Mutation Test
         run: mvn -pl core -B pitest:mutationCoverage
       - name: Extract Mutation Score
