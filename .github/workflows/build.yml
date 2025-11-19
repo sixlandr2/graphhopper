@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java-version: [ 24, 25-ea ]
+        java-version: [ 17 ]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -36,4 +36,25 @@ jobs:
             ${{ runner.os}}-node_modules-
       - name: Build ${{ matrix.java-version }}
         run: mvn -B clean test
+      - name: Run Mutation Test
+        run: mvn -pl core -B pitest:mutationCoverage
+      - name: Extract Mutation Score
+        id: mutation
+        run: |
+          SCORE=$(grep -oP '(?<=<td>)[0-9]+(?=%)' core/target/pit-reports/*/index.html | sed -n '3p')
+          echo "score=$SCORE" >> $GITHUB_OUTPUT
+          echo "Mutation Score: $SCORE"
+      - name: Compare Mutation Score with Baseline
+        id: compare
+        run: |
+          PREVIOUS=$(cat .github/baseline_mutation.txt)
+          CURRENT=${{ steps.mutation.outputs.score }}
+          echo "Previous score: $PREVIOUS"
+          echo "Current score: $CURRENT"
 
+          if [ "$CURRENT" -lt "$PREVIOUS"]; then
+            echo "Baisse score de mutation"
+            exit 1
+          else
+            echo "Score mutation plus grand ou egal baseline"
+          fi
