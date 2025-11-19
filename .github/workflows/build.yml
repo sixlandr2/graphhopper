@@ -35,7 +35,7 @@ jobs:
           restore-keys: |
             ${{ runner.os}}-node_modules-
       - name: Build ${{ matrix.java-version }}
-        run: mvn -B clean test
+        run: mvn -B -pl core -am clean test
       - name: Run Mutation Test
         run: mvn -pl core -B pitest:mutationCoverage
       - name: Extract Mutation Score
@@ -52,7 +52,7 @@ jobs:
           echo "Previous score: $PREVIOUS"
           echo "Current score: $CURRENT"
 
-          if [ "$CURRENT" -lt "$PREVIOUS"]; then
+          if [ "$CURRENT" -lt "$PREVIOUS" ]; then
             echo "Baisse score de mutation"
             exit 1
           else
